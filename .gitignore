@@ -1,0 +1,26 @@
+# Python cache
+pycache/
+*.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+
+# Test cache
+.pytest_cache/
+
+# Logs
+logs/
+*.log
+
+# Generated scan data and reports
+data/*.json
+reports/*_report.md
+
+# Environment variables and secrets
+.env
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
