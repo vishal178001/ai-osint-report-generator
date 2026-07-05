@@ -11,6 +11,10 @@ def add_finding(findings, category, severity, finding, evidence, recommendation)
 def analyze_security(report_data):
     findings = []
 
+    threat_intelligence = report_data.get("threat_intelligence", {})
+    provider_results = threat_intelligence.get("provider_results", [])
+
+
     # -------------------------
     # HTTP SECURITY ANALYSIS
     # -------------------------
@@ -138,6 +142,36 @@ def analyze_security(report_data):
         risk_rating = "Low"
     else:
         risk_rating = "Informational"
+  
+    # THREAT INTELLIGENCE ANALYSIS
+
+    for provider_result in provider_results:
+        if provider_result.get("status") != "success":
+            continue
+
+        abuse_score = provider_result.get("abuse_confidence_score", 0)
+        ip_address = provider_result.get("ip", "Unknown")
+
+        if abuse_score >= 75:
+            add_finding(
+                findings,
+                "Threat Intelligence",
+                "High",
+                "High-Risk Malicious IP Detected",
+                f"IP {ip_address} has an abuse confidence score of {abuse_score}%.",
+                f"Investigate and consider blocking IP address {ip_address}."
+            )
+
+        elif abuse_score >= 25:
+            add_finding(
+                findings,
+                "Threat Intelligence",
+                "Medium",
+                "Suspicious IP Reputation",
+                f"IP {ip_address} has an abuse confidence score of {abuse_score}%.",
+                f"Review activity associated with IP address {ip_address}."
+            )
+
     # -------------------------
     # ATTACK SURFACE ANALYSIS
     # -------------------------

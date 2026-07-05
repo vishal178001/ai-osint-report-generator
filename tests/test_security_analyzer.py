@@ -76,3 +76,32 @@ def test_ai_analysis_recommends_missing_email_security():
 
     assert any("SPF" in action for action in actions)
     assert any("DMARC" in action for action in actions)
+
+def test_malicious_ip_creates_high_finding():
+    report_data = {
+        "http": {
+            "security_headers": {}
+        },
+        "threat_intelligence": {
+            "provider_results": [
+                {
+                    "provider": "AbuseIPDB",
+                    "ip": "203.0.113.10",
+                    "status": "success",
+                    "abuse_confidence_score": 90,
+                }
+            ]
+        }
+    }
+
+    result = analyze_security(report_data)
+
+    threat_findings = [
+        finding
+        for finding in result["findings"]
+        if finding["category"] == "Threat Intelligence"
+    ]
+
+    assert len(threat_findings) == 1
+    assert threat_findings[0]["severity"] == "High"
+    assert threat_findings[0]["finding"] == "High-Risk Malicious IP Detected"

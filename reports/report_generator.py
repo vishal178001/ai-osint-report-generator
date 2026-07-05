@@ -5,6 +5,7 @@ def generate_markdown_report(report_data):
     target = report_data.get("target", "Unknown")
     analysis = report_data.get("security_analysis", {})
     findings = analysis.get("findings", [])
+    threat_intelligence = report_data.get("threat_intelligence", {})
     ai_analysis = report_data.get("ai_analysis", {})
     risk_score = analysis.get("risk_score", 0)
     risk_rating = analysis.get("risk_rating", "Unknown")
@@ -90,6 +91,41 @@ def generate_markdown_report(report_data):
     for ip in domain_intelligence.get("ip_addresses", []):
         report.append(f"- {ip}")
     report.append("")
+
+    # -------------------------
+    # THREAT INTELLIGENCE
+    # -------------------------
+
+    report.append("## Threat Intelligence Analysis")
+    report.append("")
+
+    total_ips = threat_intelligence.get("total_ips_analyzed", 0)
+
+    report.append(f"Total IPs Analyzed: {total_ips}")
+    report.append("")
+
+    ip_analysis = threat_intelligence.get("ip_analysis", [])
+
+    if ip_analysis:
+        for ip_data in ip_analysis:
+            report.append(f"### IP: {ip_data.get('ip', 'Unknown')}")
+            report.append("")
+            report.append(
+                f"- Valid: {ip_data.get('valid', False)}"
+            )
+            report.append(
+                f"- Risk Classification: {ip_data.get('risk_level', 'Unknown')}"
+            )
+            report.append(
+                f"- Private: {ip_data.get('is_private', False)}"
+            )
+            report.append(
+                f"- Reserved: {ip_data.get('is_reserved', False)}"
+            )
+            report.append("")
+    else:
+        report.append("No IP addresses were available for analysis.")
+        report.append("")
 
     report.append("## AI Analysis Summary")
     report.append("")
