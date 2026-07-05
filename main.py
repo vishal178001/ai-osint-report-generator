@@ -1,6 +1,7 @@
 from collectors.dns_collector import collect_dns
 import argparse
 import json
+from enrichment.domain_intelligence import enrich_domain_intelligence
 from collectors.whois_collector import collect_whois
 from collectors.theharvester_collector import collect_theharvester
 from collectors.http_collector import collect_http
@@ -83,6 +84,12 @@ def main():
         "technologies": tech_results ,
     }
 
+    print("[+] Enriching domain intelligence...\n")
+
+    domain_intelligence = enrich_domain_intelligence(report_data)
+    report_data["domain_intelligence"] = domain_intelligence
+
+
     print("[+] Analyzing security findings...\n")
     analysis_results = analyze_security(report_data)
 
@@ -92,7 +99,6 @@ def main():
     ai_results = generate_ai_analysis(report_data)
 
     report_data["ai_analysis"] = ai_results
-
 
     print("[+] Generating Markdown report...\n")
     report_file = generate_markdown_report(report_data)

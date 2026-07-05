@@ -5,6 +5,12 @@ def generate_ai_analysis(report_data):
     risk_score = security_analysis.get("risk_score", 0)
     risk_rating = security_analysis.get("risk_rating", "Unknown")
     severity_summary = security_analysis.get("severity_summary", {})
+    domain_intelligence = report_data.get("domain_intelligence", {})
+
+    email_security = domain_intelligence.get("email_security", {})
+    mail_providers = domain_intelligence.get("mail_providers", [])
+    nameservers = domain_intelligence.get("nameservers", [])
+    ip_addresses = domain_intelligence.get("ip_addresses", [])
 
     if not findings:
         return {
@@ -14,6 +20,16 @@ def generate_ai_analysis(report_data):
         }
 
     priority_actions = []
+
+    if not email_security.get("spf_detected", False):
+        priority_actions.append(
+            "Configure an SPF record to reduce the risk of email spoofing."
+        )
+
+    if not email_security.get("dmarc_detected", False):
+        priority_actions.append(
+            "Configure a DMARC policy to improve protection against email spoofing and phishing."
+        )
 
     for finding in findings:
         severity = finding.get("severity", "Info")
@@ -56,8 +72,17 @@ def generate_ai_analysis(report_data):
             "The identified issues are primarily low severity or informational."
         )
 
+    intelligence_context = {
+        "spf_enabled": email_security.get("spf_detected", False),
+        "dmarc_enabled": email_security.get("dmarc_detected", False),
+        "mail_providers": mail_providers,
+        "nameservers": nameservers,
+        "ip_addresses": ip_addresses,
+    }
+
     return {
         "summary": summary,
         "priority_actions": priority_actions,
-        "risk_context": risk_context
+        "risk_context": risk_context,
+        "domain_intelligence_context": intelligence_context,
     }

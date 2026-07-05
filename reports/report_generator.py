@@ -56,6 +56,41 @@ def generate_markdown_report(report_data):
 
     report.append("")
 
+    # -------------------------
+    # DOMAIN INTELLIGENCE
+    # -------------------------
+
+    domain_intelligence = report_data.get("domain_intelligence", {})
+
+    report.append("## Domain Intelligence")
+    report.append("")
+
+    email_security = domain_intelligence.get("email_security", {})
+
+    report.append("### Email Security")
+    report.append(
+        f"- SPF Detected: {email_security.get('spf_detected', False)}"
+    )
+    report.append(
+        f"- DMARC Detected: {email_security.get('dmarc_detected', False)}"
+    )
+    report.append("")
+
+    report.append("### Mail Providers")
+    for provider in domain_intelligence.get("mail_providers", []):
+        report.append(f"- {provider}")
+    report.append("")
+
+    report.append("### Nameservers")
+    for nameserver in domain_intelligence.get("nameservers", []):
+        report.append(f"- {nameserver}")
+    report.append("")
+
+    report.append("### IP Addresses")
+    for ip in domain_intelligence.get("ip_addresses", []):
+        report.append(f"- {ip}")
+    report.append("")
+
     report.append("## AI Analysis Summary")
     report.append("")
 

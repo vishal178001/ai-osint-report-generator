@@ -37,3 +37,42 @@ def test_security_analyzer():
     assert result["risk_score"] == 47
     assert result["risk_rating"] == "Medium"
 
+from ai.llm_analyzer import generate_ai_analysis
+
+
+def test_ai_analysis_recommends_missing_email_security():
+    report_data = {
+        "security_analysis": {
+            "findings": [
+                {
+                    "severity": "Medium",
+                    "recommendation": "Review security configuration."
+                }
+            ],
+            "risk_score": 40,
+            "risk_rating": "Medium",
+            "severity_summary": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 1,
+                "Low": 0,
+                "Info": 0,
+            },
+        },
+        "domain_intelligence": {
+            "email_security": {
+                "spf_detected": False,
+                "dmarc_detected": False,
+            },
+            "mail_providers": [],
+            "nameservers": ["ns1.example.com"],
+            "ip_addresses": ["192.0.2.1"],
+        },
+    }
+
+    result = generate_ai_analysis(report_data)
+
+    actions = result["priority_actions"]
+
+    assert any("SPF" in action for action in actions)
+    assert any("DMARC" in action for action in actions)
