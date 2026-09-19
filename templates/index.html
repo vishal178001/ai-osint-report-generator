@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Assisted OSINT Report Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>AI-Assisted OSINT Report Generator</h1>
+        <p>Automated OSINT collection and security reporting</p>
+    </header>
+
+    <section class="card">
+        <h2>Start OSINT Scan</h2>
+        <form method="POST">
+            <label for="target">Target Domain</label>
+            <input
+                type="text"
+                id="target"
+                name="target"
+                placeholder="example.com"
+                value="{{ target }}"
+                required
+            >
+            <button type="submit">Start Scan</button>
+        </form>
+        <p class="hint">Only scan domains you own or are authorized to assess.</p>
+    </section>
+
+    {% if success %}
+    <section class="card success">
+        <h2>✓ Scan Completed Successfully</h2>
+        <p>Target: <strong>{{ target }}</strong></p>
+
+        <div class="buttons">
+            {% if report_file %}
+            <a href="{{ url_for('view_report', filename=report_file) }}"
+               class="button" target="_blank">
+                View Markdown Report
+            </a>
+            {% endif %}
+
+            {% if json_file %}
+            <a href="{{ url_for('view_json', filename=json_file) }}"
+               class="button" target="_blank">
+                View JSON Report
+            </a>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if result %}
+    <section class="card">
+        <h2>Scan Output</h2>
+        <pre>{{ result }}</pre>
+    </section>
+    {% endif %}
+</div>
+</body>
+</html>
