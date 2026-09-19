@@ -1,5 +1,7 @@
 from datetime import datetime
 from config.settings import REPORT_DIR, REPORT_EXTENSION
+import os
+
 
 def generate_markdown_report(report_data):
     target = report_data.get("target", "Unknown")
@@ -14,10 +16,11 @@ def generate_markdown_report(report_data):
     scan_start = report_data.get("scan_start", "Unknown")
     scan_end = report_data.get("scan_end", "Unknown")
     scan_duration = report_data.get("scan_duration_seconds", "Unknown")
+    risk_methodology = analysis.get("risk_methodology", {})
 
     report = []
 
-    report.append(f"# AI-Assisted OSINT Security Report")
+    report.append("# AI-Assisted OSINT Security Report")
     report.append("")
     report.append(f"Target: {target}")
     report.append(f"Generated: {datetime.now().isoformat()}")
@@ -25,6 +28,70 @@ def generate_markdown_report(report_data):
     report.append(f"Scan End: {scan_end}")
     report.append(f"Scan Duration: {scan_duration} seconds")
     report.append("")
+
+    # ==========================================================
+    # EXECUTIVE SUMMARY
+    # ==========================================================
+    report.append("## Executive Summary")
+    report.append("")
+    report.append(
+        f"The assessment identified {len(findings)} security findings "
+        f"with an overall risk score of {risk_score}/100 "
+        f"and a risk rating of {risk_rating}."
+    )
+    report.append("")
+    report.append("### Risk at a Glance")
+    report.append("")
+    report.append(f"- **Overall Risk:** {risk_rating}")
+    report.append(f"- **Risk Score:** {risk_score}/100")
+    report.append(f"- **Total Findings:** {len(findings)}")
+
+    for severity in ["Critical", "High", "Medium", "Low", "Info"]:
+        report.append(
+            f"- **{severity} Findings:** "
+            f"{severity_summary.get(severity, 0)}"
+        )
+
+    report.append("")
+
+    report.append("### Priority Actions")
+    report.append("")
+
+    prioritized = [
+        finding for finding in findings
+        if finding.get("severity") != "Info"
+    ][:5]
+
+    if prioritized:
+        for finding in prioritized:
+            report.append(
+                f"{finding.get('priority', '-')}."
+                f" **{finding.get('finding', 'Unknown Finding')}** "
+                f"— {finding.get('recommendation', 'Review finding')} "
+                f"(risk {finding.get('risk_score', 0)}/25)."
+            )
+    else:
+        report.append("No non-informational priority actions identified.")
+
+    report.append("")
+
+    ai_summary = ai_analysis.get("executive_summary")
+    if ai_summary:
+        report.append("### AI-Assisted Executive Context")
+        report.append("")
+        report.append(ai_summary)
+        report.append("")
+
+    report.append(
+        "> Automated risk scoring is a prioritization aid, not a substitute "
+        "for business context or a formal vulnerability standard. Findings "
+        "should be validated by a qualified reviewer."
+    )
+    report.append("")
+
+    # ==========================================================
+    # COLLECTION STATUS
+    # ==========================================================
     report.append("## Collection Status")
     report.append("")
 
@@ -36,31 +103,28 @@ def generate_markdown_report(report_data):
 
     report.append("")
 
-    report.append("## Executive Summary")
+    # ==========================================================
+    # RISK METHODOLOGY
+    # ==========================================================
+    report.append("## Risk Methodology")
     report.append("")
     report.append(
-        f"The OSINT analysis identified {len(findings)} security findings."
+        risk_methodology.get(
+            "description",
+            "Finding risk uses severity, exposure, and exploitability.",
+        )
     )
     report.append("")
-    report.append("## Risk Overview")
-    report.append("")
-    report.append(f"Overall Risk Rating: {risk_rating}")
-    report.append(f"Risk Score: {risk_score}/100")
-    report.append("")
-
-    report.append("### Severity Summary")
+    report.append(
+        "This lightweight model is designed for transparent prioritization "
+        "of OSINT findings. It should be calibrated to organizational "
+        "context before being used for formal risk decisions."
+    )
     report.append("")
 
-    for severity in ["Critical", "High", "Medium", "Low", "Info"]:
-        count = severity_summary.get(severity, 0)
-    report.append(f"- {severity}: {count}")
-
-    report.append("")
-
-    # -------------------------
+    # ==========================================================
     # DOMAIN INTELLIGENCE
-    # -------------------------
-
+    # ==========================================================
     domain_intelligence = report_data.get("domain_intelligence", {})
 
     report.append("## Domain Intelligence")
@@ -92,15 +156,13 @@ def generate_markdown_report(report_data):
         report.append(f"- {ip}")
     report.append("")
 
-    # -------------------------
+    # ==========================================================
     # THREAT INTELLIGENCE
-    # -------------------------
-
+    # ==========================================================
     report.append("## Threat Intelligence Analysis")
     report.append("")
 
     total_ips = threat_intelligence.get("total_ips_analyzed", 0)
-
     report.append(f"Total IPs Analyzed: {total_ips}")
     report.append("")
 
@@ -110,11 +172,10 @@ def generate_markdown_report(report_data):
         for ip_data in ip_analysis:
             report.append(f"### IP: {ip_data.get('ip', 'Unknown')}")
             report.append("")
+            report.append(f"- Valid: {ip_data.get('valid', False)}")
             report.append(
-                f"- Valid: {ip_data.get('valid', False)}"
-            )
-            report.append(
-                f"- Risk Classification: {ip_data.get('risk_level', 'Unknown')}"
+                f"- Risk Classification: "
+                f"{ip_data.get('risk_level', 'Unknown')}"
             )
             report.append(
                 f"- Private: {ip_data.get('is_private', False)}"
@@ -127,24 +188,90 @@ def generate_markdown_report(report_data):
         report.append("No IP addresses were available for analysis.")
         report.append("")
 
-    report.append("## AI Analysis Summary")
+    # ==========================================================
+    # TECHNICAL APPENDIX
+    # ==========================================================
+    report.append("## Technical Appendix")
+    report.append("")
+    report.append(
+        "This section preserves the evidence, prioritization factors, "
+        "and remediation context behind each automated finding."
+    )
+    report.append("")
+
+    if not findings:
+        report.append("No security findings were identified.")
+    else:
+        for number, finding in enumerate(findings, start=1):
+            report.append(
+                f"### {number}. {finding.get('finding', 'Unknown Finding')}"
+            )
+            report.append("")
+            report.append(
+                f"- **Priority:** {finding.get('priority', number)}"
+            )
+            report.append(
+                f"- **Category:** {finding.get('category', 'Unknown')}"
+            )
+            report.append(
+                f"- **Severity:** {finding.get('severity', 'Unknown')}"
+            )
+            report.append(
+                f"- **Finding Risk:** "
+                f"{finding.get('risk_score', 0)}/25"
+            )
+            report.append(
+                f"- **Exposure:** {finding.get('exposure', 0)}"
+            )
+            report.append(
+                f"- **Exploitability:** "
+                f"{finding.get('exploitability', 0)}"
+            )
+            report.append("")
+            report.append("**Evidence**")
+            report.append("")
+            report.append(
+                f"{finding.get('evidence', 'No evidence recorded.')}"
+            )
+            report.append("")
+            report.append("**Recommendation**")
+            report.append("")
+            report.append(
+                finding.get(
+                    "recommendation",
+                    "No recommendation available.",
+                )
+            )
+            report.append("")
+
+            remediation = finding.get("remediation_details")
+            if remediation:
+                report.append("**Remediation Guidance**")
+                report.append("")
+                report.append(remediation)
+                report.append("")
+
+    # ==========================================================
+    # AI ANALYSIS
+    # ==========================================================
+    report.append("## AI Analysis")
     report.append("")
 
     summary = ai_analysis.get(
         "summary",
-        "No AI analysis summary available."
+        "No AI analysis summary available.",
     )
     report.append(summary)
     report.append("")
 
     report.append("### Risk Context")
     report.append("")
-
-    risk_context = ai_analysis.get(
-        "risk_context",
-        "No risk context available."
+    report.append(
+        ai_analysis.get(
+            "risk_context",
+            "No risk context available.",
+        )
     )
-    report.append(risk_context)
     report.append("")
 
     report.append("### Priority Actions")
@@ -160,47 +287,10 @@ def generate_markdown_report(report_data):
 
     report.append("")
 
-    report.append("## Security Findings")
-    report.append("")
-
-    if not findings:
-        report.append("No security findings were identified.")
-    else:
-        for number, finding in enumerate(findings, start=1):
-            report.append(
-                f"### {number}. {finding.get('finding', 'Unknown Finding')}"
-            )
-            report.append("")
-            report.append(
-                f"Category: {finding.get('category', 'Unknown')}"
-            )
-            report.append(
-                f"Severity: {finding.get('severity', 'Unknown')}"
-            )
-            report.append("")
-            report.append(
-                f"Recommendation: "
-                f"{finding.get('recommendation', 'No recommendation available')}"
-            )
-            report.append("")
-
-    ai_data = report_data.get("ai_analysis", {})
-
-    if ai_data and not ai_data.get("error"):
-        report.append("")
-        report.append("## AI-Assisted Executive Summary")
-        report.append("")
-        report.append(
-            ai_data.get(
-                "executive_summary",
-                "AI analysis was completed, but no summary was returned."
-            )
-        )
-        report.append("")
-
+    os.makedirs(REPORT_DIR, exist_ok=True)
     output_file = f"{REPORT_DIR}/{target}_report{REPORT_EXTENSION}"
 
-    with open(output_file, "w") as file:
+    with open(output_file, "w", encoding="utf-8") as file:
         file.write("\n".join(report))
 
     return output_file
