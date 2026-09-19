@@ -10,7 +10,7 @@ def test_security_analyzer():
                 "X-Frame-Options": "Present",
                 "X-Content-Type-Options": "Present",
                 "Referrer-Policy": "Present",
-                "Permissions-Policy": "Present"
+                "Permissions-Policy": "Present",
             }
         },
         "ssl": {
@@ -27,20 +27,27 @@ def test_security_analyzer():
     result = analyze_security(report_data)
 
     assert result["total_findings"] == 6
-
     assert result["severity_summary"]["High"] == 1
     assert result["severity_summary"]["Medium"] == 4
     assert result["severity_summary"]["Info"] == 1
-
     assert len(result["findings"]) == 6
 
-    assert result["risk_score"] == 47
+    # Risk uses severity × exposure × exploitability.
+    assert result["risk_score"] == 28.8
     assert result["risk_rating"] == "Medium"
 
-from ai.llm_analyzer import generate_ai_analysis
+    first = result["findings"][0]
+    assert first["risk_score"] > 0
+    assert 0 <= first["exposure"] <= 1
+    assert 0 <= first["exploitability"] <= 1
+    assert first["evidence"]
+    assert first["remediation_details"]
+    assert first["priority"] == 1
 
 
 def test_ai_analysis_recommends_missing_email_security():
+    from ai.llm_analyzer import generate_ai_analysis
+
     report_data = {
         "security_analysis": {
             "findings": [
@@ -77,6 +84,7 @@ def test_ai_analysis_recommends_missing_email_security():
     assert any("SPF" in action for action in actions)
     assert any("DMARC" in action for action in actions)
 
+
 def test_malicious_ip_creates_high_finding():
     report_data = {
         "http": {
@@ -105,3 +113,6 @@ def test_malicious_ip_creates_high_finding():
     assert len(threat_findings) == 1
     assert threat_findings[0]["severity"] == "High"
     assert threat_findings[0]["finding"] == "High-Risk Malicious IP Detected"
+    assert threat_findings[0]["risk_score"] == 13.5
+    assert threat_findings[0]["evidence"]
+    assert threat_findings[0]["remediation_details"]
