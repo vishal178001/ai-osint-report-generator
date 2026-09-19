@@ -81,6 +81,36 @@ Target Domain
 - Markdown report generation
 - JSON output for further automation
 
+### Web dashboard
+
+The repository includes a Flask-based local dashboard. Flask is installed automatically from `requirements.txt`, so a fresh clone does not require a separate dashboard dependency setup.
+
+The dashboard provides:
+
+- Target/domain input
+- One-click scan execution
+- Scan output
+- View Markdown report
+- View JSON report
+
+Start it with:
+
+```bash
+python dashboard.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+The original CLI remains available:
+
+```bash
+python main.py -t example.com
+```
+
 ## Why this project?
 
 A typical OSINT workflow can involve several independent tools and a large amount of manual report preparation. This project explores how automation and AI can reduce that repetitive work while keeping the underlying evidence and security findings structured.
@@ -94,14 +124,17 @@ ai-osint-report-generator/
 ├── ai/                     # Security analysis and AI-assisted analysis
 ├── app/                    # Application package
 ├── collectors/             # OSINT collection modules
-├── config/                 # Configuration
+├── config/                 # Configuration and runtime directories
 ├── enrichment/             # Domain and threat intelligence enrichment
 │   └── providers/          # Intelligence provider implementations
 ├── reports/                # Markdown report generation
+├── templates/              # Flask dashboard HTML templates
+├── static/                 # Dashboard CSS
 ├── tests/                  # Automated tests
 ├── utils/                  # Validation, logging, safe execution
 ├── data/                   # Generated scan data (ignored)
 ├── logs/                   # Runtime logs (ignored)
+├── dashboard.py            # Web dashboard entry point
 ├── main.py                 # CLI entry point
 ├── requirements.txt        # Python dependencies
 └── .env.example            # Environment configuration example
@@ -129,14 +162,19 @@ Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+.venv\\Scripts\\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. Install all dependencies
+
+The dashboard dependency is included in the main requirements file. No separate Flask installation is required.
 
 ```bash
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
+
+The project creates its runtime `data/`, `reports/`, and `logs/` directories automatically after installation/import, so a fresh clone does not require manual directory creation.
 
 ### 4. Configure optional integrations
 
@@ -146,7 +184,7 @@ Copy the example environment file and add only the credentials you are authorize
 cp .env.example .env
 ```
 
-On Windows, copy the file manually or use:
+On Windows:
 
 ```powershell
 Copy-Item .env.example .env
@@ -154,13 +192,29 @@ Copy-Item .env.example .env
 
 ## Usage
 
+### CLI
+
 Run a scan against a domain you own or are authorized to assess:
 
 ```bash
 python main.py -t example.com
 ```
 
-The application reports collector progress, performs enrichment and security analysis, and generates structured output.
+### Web dashboard
+
+Start the local dashboard:
+
+```bash
+python dashboard.py
+```
+
+Open:
+
+```text
+http://127.0.0.1:5000
+```
+
+Enter an authorized target and select **Start Scan**. After the scan, the dashboard provides links to the generated Markdown and JSON reports.
 
 ### Generated output
 
@@ -195,7 +249,7 @@ The output is an automated analysis aid and should be reviewed by a qualified hu
 
 ## Current status
 
-The project is an actively developed early-stage open-source tool. The current focus is reliability, modular collectors, structured security analysis, AI-assisted reporting, testing, and documentation.
+The project is an actively developed early-stage open-source tool. The current focus is reliability, modular collectors, structured security analysis, AI-assisted reporting, testing, documentation, and a local web dashboard.
 
 Current development priorities include:
 
@@ -205,6 +259,7 @@ Current development priorities include:
 - Expanding automated test coverage
 - Improving contributor documentation
 - Making the collection and analysis pipeline easier to extend
+- Expanding dashboard capabilities
 
 ## Contributing
 
