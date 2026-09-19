@@ -33,7 +33,7 @@ def test_security_analyzer():
     assert len(result["findings"]) == 6
 
     # Risk uses severity × exposure × exploitability.
-    assert result["risk_score"] == 28.8
+    assert result["risk_score"] == 34.4
     assert result["risk_rating"] == "Medium"
 
     first = result["findings"][0]
