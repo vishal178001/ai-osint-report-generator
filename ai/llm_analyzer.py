@@ -52,24 +52,37 @@ def generate_ai_analysis(report_data):
         f"{critical} critical, {high} high, and {medium} medium severity findings."
     )
 
-    if critical > 0:
+    # Keep the narrative aligned with the deterministic domain risk rating.
+    # The AI layer explains the rating; it does not independently re-score it.
+    if risk_rating == "Critical":
         risk_context = (
-            "Critical security issues were identified and should be "
-            "addressed immediately."
+            "The deterministic risk model rated the target as Critical. "
+            "Critical findings should be addressed immediately."
         )
-    elif high > 0:
+    elif risk_rating == "High":
         risk_context = (
-            "High-severity weaknesses were identified and should be "
-            "prioritized for remediation."
+            "The deterministic risk model rated the target as High. "
+            "High-priority findings should be addressed promptly."
         )
-    elif medium > 0:
+    elif risk_rating == "Medium":
         risk_context = (
-            "The target has moderate security weaknesses that should "
-            "be reviewed and remediated."
+            "The deterministic risk model rated the target as Medium. "
+            "The identified weaknesses should be reviewed and remediated."
+        )
+    elif risk_rating == "Low":
+        risk_context = (
+            "The deterministic risk model rated the target as Low. "
+            "The identified lower-risk weaknesses should be reviewed and remediated."
+        )
+    elif risk_rating == "Informational":
+        risk_context = (
+            "The deterministic risk model rated the target as Informational. "
+            "The available findings are informational and should be reviewed in context."
         )
     else:
         risk_context = (
-            "The identified issues are primarily low severity or informational."
+            f"The deterministic risk model returned a {risk_rating} rating. "
+            "Review the findings and supporting evidence in context."
         )
 
     intelligence_context = {
