@@ -145,7 +145,7 @@ def analyze_security(report_data):
             (
                 "Publish a TXT record at _dmarc.<target>. A common starting "
                 "pattern is "
-                ""v=DMARC1; p=none; rua=mailto:<reporting-mailbox>". "
+                "'v=DMARC1; p=none; rua=mailto:<reporting-mailbox>'. "
                 "Use an organization-controlled reporting mailbox and "
                 "tighten the policy only after legitimate senders are "
                 "validated."
