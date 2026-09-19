@@ -85,6 +85,44 @@ def test_ai_analysis_recommends_missing_email_security():
     assert any("DMARC" in action for action in actions)
 
 
+def test_ai_risk_context_matches_deterministic_rating():
+    from ai.llm_analyzer import generate_ai_analysis
+
+    report_data = {
+        "security_analysis": {
+            "findings": [
+                {
+                    "severity": "Medium",
+                    "recommendation": "Review security configuration."
+                }
+            ],
+            "risk_score": 15.4,
+            "risk_rating": "Low",
+            "severity_summary": {
+                "Critical": 0,
+                "High": 0,
+                "Medium": 1,
+                "Low": 0,
+                "Info": 0,
+            },
+        },
+        "domain_intelligence": {
+            "email_security": {
+                "spf_detected": True,
+                "dmarc_detected": True,
+            },
+            "mail_providers": [],
+            "nameservers": [],
+            "ip_addresses": [],
+        },
+    }
+
+    result = generate_ai_analysis(report_data)
+
+    assert "rated the target as Low" in result["risk_context"]
+    assert "moderate security weaknesses" not in result["risk_context"]
+
+
 def test_malicious_ip_creates_high_finding():
     report_data = {
         "http": {
